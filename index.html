@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <title>수학 플랫폼 - 정답률 시각화</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .problem-container {
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .problem {
+            margin-bottom: 15px;
+        }
+        
+        .options {
+            margin-bottom: 15px;
+        }
+        
+        .option {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .option:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .submit-btn {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .score-display {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .score-red {
+            background-color: #ffcccc;
+            color: #cc0000;
+        }
+        
+        .score-yellow {
+            background-color: #ffffcc;
+            color: #cc9900;
+        }
+        
+        .score-green {
+            background-color: #ccffcc;
+            color: #006600;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 30px;
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>수학 플랫폼</h1>
+    
+    <div class="problem-container">
+        <div class="problem">
+            <h3>문제 1: 다음 방정식을 푸세요.</h3>
+            <p>2x + 5 = 15</p>
+        </div>
+        
+        <div class="options">
+            <label class="option">
+                <input type="radio" name="answer1" value="4"> x = 4
+            </label>
+            <label class="option">
+                <input type="radio" name="answer1" value="5"> x = 5
+            </label>
+            <label class="option">
+                <input type="radio" name="answer1" value="6"> x = 6
+            </label>
+            <label class="option">
+                <input type="radio" name="answer1" value="7"> x = 7
+            </label>
+        </div>
+        
+        <button class="submit-btn" onclick="checkAnswer(1)">제출</button>
+        
+        <div id="score1" class="score-display" style="display: none;"></div>
+        <div id="progress-container1" class="progress-container" style="display: none;">
+            <div id="progress-bar1" class="progress-bar"></div>
+        </div>
+    </div>
+    
+    <div class="problem-container">
+        <div class="problem">
+            <h3>문제 2: 다음 수식의 값을 구하세요.</h3>
+            <p>3 × (4 + 2) ÷ 2</p>
+        </div>
+        
+        <div class="options">
+            <label class="option">
+                <input type="radio" name="answer2" value="7"> 7
+            </label>
+            <label class="option">
+                <input type="radio" name="answer2" value="8"> 8
+            </label>
+            <label class="option">
+                <input type="radio" name="answer2" value="9"> 9
+            </label>
+            <label class="option">
+                <input type="radio" name="answer2" value="10"> 10
+            </label>
+        </div>
+        
+        <button class="submit-btn" onclick="checkAnswer(2)">제출</button>
+        
+        <div id="score2" class="score-display" style="display: none;"></div>
+        <div id="progress-container2" class="progress-container" style="display: none;">
+            <div id="progress-bar2" class="progress-bar"></div>
+        </div>
+    </div>
+    
+    <div class="problem-container">
+        <h2>전체 정답률</h2>
+        <div id="totalScore" class="score-display">아직 풀지 않았습니다</div>
+        <div id="total-progress-container" class="progress-container">
+            <div id="total-progress-bar" class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // 정답 데이터
+        const answers = {
+            1: "5",
+            2: "9"
+        };
+        
+        // 사용자 응답 저장
+        const userAnswers = {};
+        
+        // 정답률에 따른 색상 변경
+        function getScoreColor(percentage) {
+            if (percentage < 60) {
+                return 'red';
+            } else if (percentage < 80) {
+                return 'yellow';
+            } else {
+                return 'green';
+            }
+        }
+        
+        // 문제 체크 함수
+        function checkAnswer(problemNumber) {
+            const selectedAnswer = document.querySelector(`input[name="answer${problemNumber}"]:checked`);
+            
+            if (!selectedAnswer) {
+                alert('답을 선택해주세요.');
+                return;
+            }
+            
+            const userAnswer = selectedAnswer.value;
+            const correctAnswer = answers[problemNumber];
+            
+            const isCorrect = userAnswer === correctAnswer;
+            userAnswers[problemNumber] = isCorrect ? 100 : 0;
+            
+            // 개별 문제 점수 표시
+            const scoreDisplay = document.getElementById(`score${problemNumber}`);
+            const progressContainer = document.getElementById(`progress-container${problemNumber}`);
+            const progressBar = document.getElementById(`progress-bar${problemNumber}`);
+            
+            if (isCorrect) {
+                scoreDisplay.textContent = '정답입니다! (100%)';
+                scoreDisplay.className = 'score-display score-green';
+                progressBar.style.width = '100%';
+                progressBar.style.backgroundColor = '#4CAF50';
+            } else {
+                scoreDisplay.textContent = '오답입니다. (0%)';
+                scoreDisplay.className = 'score-display score-red';
+                progressBar.style.width = '0%';
+                progressBar.style.backgroundColor = '#f44336';
+            }
+            
+            scoreDisplay.style.display = 'block';
+            progressContainer.style.display = 'block';
+            
+            // 전체 정답률 계산 및 표시
+            updateTotalScore();
+        }
+        
+        // 전체 정답률 업데이트
+        function updateTotalScore() {
+            const totalScore = document.getElementById('totalScore');
+            const totalProgressBar = document.getElementById('total-progress-bar');
+            
+            // 풀은 문제가 있는 경우에만 계산
+            const attemptedProblems = Object.keys(userAnswers).length;
+            
+            if (attemptedProblems > 0) {
+                const scoreSum = Object.values(userAnswers).reduce((sum, score) => sum + score, 0);
+                const averageScore = scoreSum / attemptedProblems;
+                
+                totalScore.textContent = `전체 정답률: ${averageScore.toFixed(1)}%`;
+                
+                const scoreColor = getScoreColor(averageScore);
+                totalScore.className = `score-display score-${scoreColor}`;
+                
+                totalProgressBar.style.width = `${averageScore}%`;
+                
+                // 정답률에 따른 색상
+                if (scoreColor === 'red') {
+                    totalProgressBar.style.backgroundColor = '#f44336';
+                } else if (scoreColor === 'yellow') {
+                    totalProgressBar.style.backgroundColor = '#FFC107';
+                } else {
+                    totalProgressBar.style.backgroundColor = '#4CAF50';
+                }
+                
+                totalProgressBar.textContent = `${averageScore.toFixed(1)}%`;
+            }
+        }
+    </script>
+</body>
+</html>
